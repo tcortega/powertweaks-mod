@@ -4,9 +4,11 @@
   "package": "com.tcortega.powertweaks.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "minecraft.PlayerEntityMixin",
   ],
   "client": [
     "minecraft.ClientPlayNetworkHandlerMixin",
+    "minecraft.MinecraftClientMixin"
   ],
   "injectors": {
     "defaultRequire": 1

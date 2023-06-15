@@ -1,12 +1,17 @@
 plugins {
 	id 'fabric-loom' version '1.2-SNAPSHOT'
 	id 'maven-publish'
+	id "com.github.johnrengelman.shadow" version "8.1.1"
 }
 
 version = project.mod_version
 group = project.maven_group
 
 repositories {
+	maven {
+		name = "meteor-maven"
+		url = "https://maven.meteordev.org/releases"
+	}
 	exclusiveContent {
 		forRepository {
 			maven {
@@ -20,6 +25,11 @@ repositories {
 	}
 }
 
+configurations {
+	implementation.extendsFrom(library)
+	shadow.extendsFrom(library)
+}
+
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -28,18 +38,22 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-	// External Mods
-	modRuntimeOnly("maven.modrinth:modmenu:${project.modmenu_version}") { transitive = false }
-
 	modImplementation("maven.modrinth:xaeros-minimap:${project.minimap_version}") { transitive = false }
 
+	modRuntimeOnly("maven.modrinth:modmenu:${project.modmenu_version}") { transitive = false }
 
+	// Libraries
+	library "meteordevelopment:orbit:${project.orbit_version}"
+}
 
-	// Uncomment the following line to enable the deprecated Fabric API modules. 
-	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
+shadowJar {
+	configurations = [ project.configurations.shadow ]
 
-	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
+	dependencies {
+		exclude {
+			it.moduleGroup == "org.slf4j"
+		}
+	}
 }
 
 base {
@@ -73,6 +87,11 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${base.archivesName.get()}"}
 	}
+}
+
+remapJar {
+	dependsOn shadowJar
+	inputFile.set(shadowJar.archiveFile)
 }
 
 // configure the maven publication
