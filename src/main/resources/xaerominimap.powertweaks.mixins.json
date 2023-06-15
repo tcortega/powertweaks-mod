@@ -8,8 +8,7 @@
   ],
   "client": [
     "GuiAddWaypointMixin",
-    "IGuiAddWaypointMixinAccessor",
-    "IScreenBaseMixinAccessor"
+    "IGuiAddWaypointMixinAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

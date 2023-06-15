@@ -1,7 +1,7 @@
 package com.tcortega.powertweaks.mixin.xaerominimap;
 
 import com.tcortega.powertweaks.PowerTweaks;
-import com.tcortega.powertweaks.mixin.minecraft.IScreenMixinAccessor;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.CyclingButtonWidget;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
@@ -9,10 +9,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xaero.common.AXaeroMinimap;
 import xaero.common.gui.GuiAddWaypoint;
 
 import java.util.stream.Collectors;
 
+import xaero.common.gui.ScreenBase;
 import xaero.common.minimap.waypoints.Waypoint;
 import xaero.common.minimap.waypoints.WaypointWorld;
 import xaero.common.minimap.waypoints.WaypointsManager;
@@ -21,19 +23,22 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 @Mixin(GuiAddWaypoint.class)
-public class GuiAddWaypointMixin {
+public abstract class GuiAddWaypointMixin extends ScreenBase {
     private static final String OVERWORLD_DIM = "dim%0";
     private static final String NETHER_DIM = "dim%-1";
 
     private boolean shouldMirrorToNether = true;
 
+    protected GuiAddWaypointMixin(AXaeroMinimap modMain, Screen parent, Screen escape, Text titleIn) {
+        super(modMain, parent, escape, titleIn);
+    }
+
     @Inject(method = "init", at = @At("RETURN"))
     private void onInit(CallbackInfo info) {
-        var screenAccessor = (IScreenMixinAccessor) this;
         var currentWorldKey = ((IGuiAddWaypointMixinAccessor) this).getWorlds().getCurrentKeys()[0];
         if (!isInOverworld(currentWorldKey)) return;
 
-        addMirrorToNetherButton(screenAccessor);
+        addMirrorToNetherButton();
     }
 
     @Redirect(method = "lambda$init$3", at = @At(value = "INVOKE", target = "Lxaero/common/minimap/waypoints/WaypointsManager;getWorld(Ljava/lang/String;Ljava/lang/String;)Lxaero/common/minimap/waypoints/WaypointWorld;"))
@@ -46,10 +51,10 @@ public class GuiAddWaypointMixin {
         return instance.getWorld(container, world);
     }
 
-    private void addMirrorToNetherButton(IScreenMixinAccessor screenAccessor) {
-        int x = screenAccessor.getWidth() / 2 + 105, y = 56, width = 120, height = 20;
+    private void addMirrorToNetherButton() {
+        int x = this.width / 2 + 105, y = 56, width = 120, height = 20;
         var button = buildCyclingButton(x, y, width, height);
-        screenAccessor.callAddDrawableChild(button);
+        addDrawableChild(button);
     }
 
     private CyclingButtonWidget<Boolean> buildCyclingButton(int x, int y, int width, int height) {
@@ -97,7 +102,7 @@ public class GuiAddWaypointMixin {
 
     private void saveWaypoints(WaypointWorld netherWorld, int waypointCount) {
         try {
-            ((IScreenBaseMixinAccessor) this).getModMain().getSettings().saveWaypoints(netherWorld);
+            modMain.getSettings().saveWaypoints(netherWorld);
             PowerTweaks.LOGGER.info("Successfully mirrored " + waypointCount + " waypoints to nether");
         } catch (IOException exception) {
             PowerTweaks.LOGGER.error("Failed to save waypoints to nether", exception);

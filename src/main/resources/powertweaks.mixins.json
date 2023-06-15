@@ -6,7 +6,7 @@
   "mixins": [
   ],
   "client": [
-    "minecraft.IScreenMixinAccessor"
+    "minecraft.ClientPlayNetworkHandlerMixin",
   ],
   "injectors": {
     "defaultRequire": 1
