@@ -16,6 +16,7 @@ public class Modules {
 
     public void init() {
        add(new SafeWalk());
+       add(new AttackEntity());
     }
 
     public void add(Module module) {

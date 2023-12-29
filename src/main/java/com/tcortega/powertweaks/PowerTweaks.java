@@ -1,14 +1,20 @@
 package com.tcortega.powertweaks;
 
+import com.mojang.brigadier.CommandDispatcher;
+import com.tcortega.powertweaks.commands.DelayCommand;
 import com.tcortega.powertweaks.modules.Modules;
 import meteordevelopment.orbit.EventBus;
 import meteordevelopment.orbit.IEventBus;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.command.CommandRegistryAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
+
 
 public class PowerTweaks implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("powertweaks");
@@ -22,6 +28,8 @@ public class PowerTweaks implements ClientModInitializer {
     public void onInitializeClient() {
         LOGGER.info("PowerTweaks initialized.");
 
+        ClientCommandRegistrationCallback.EVENT.register(PowerTweaks::registerCommands);
+
         mc = MinecraftClient.getInstance();
         modules = new Modules();
 
@@ -30,5 +38,9 @@ public class PowerTweaks implements ClientModInitializer {
         EVENT_BUS.subscribe(modules);
 
         PowerTweaksGameRules.init();
+    }
+
+    public static void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
+        DelayCommand.register(dispatcher);
     }
 }

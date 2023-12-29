@@ -6,9 +6,4 @@ public class SafeWalk extends Module {
     public SafeWalk() {
         super("SafeWalk", GLFW.GLFW_KEY_V);
     }
-    
-    @Override
-    protected void toggle() {
-        
-    }
 }
